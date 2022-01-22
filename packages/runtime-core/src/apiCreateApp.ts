@@ -211,6 +211,7 @@ export function createAppAPI<HostElement>(
         }
       },
 
+      // app.use
       use(plugin: Plugin, ...options: any[]) {
         if (installedPlugins.has(plugin)) {
           __DEV__ && warn(`Plugin has already been applied to target app.`)
@@ -229,6 +230,10 @@ export function createAppAPI<HostElement>(
         return app
       },
 
+      // app.mixin app.component app.directive
+      // 这三个方法就是将传进来的内容放到context对应的容器中
+
+      // app.mixin 注册全局混入
       mixin(mixin: ComponentOptions) {
         if (__FEATURE_OPTIONS_API__) {
           if (!context.mixins.includes(mixin)) {
@@ -245,6 +250,7 @@ export function createAppAPI<HostElement>(
         return app
       },
 
+      // app.component 注册全局组件
       component(name: string, component?: Component): any {
         if (__DEV__) {
           validateComponentName(name, context.config)
@@ -259,6 +265,7 @@ export function createAppAPI<HostElement>(
         return app
       },
 
+      // app.component 注册全局指令
       directive(name: string, directive?: Directive) {
         if (__DEV__) {
           validateDirectiveName(name)
@@ -274,6 +281,7 @@ export function createAppAPI<HostElement>(
         return app
       },
 
+      // app.mount原始定义的地方
       mount(
         rootContainer: HostElement,
         isHydrate?: boolean,
@@ -298,6 +306,7 @@ export function createAppAPI<HostElement>(
           if (isHydrate && hydrate) {
             hydrate(vnode as VNode<Node, Element>, rootContainer as any)
           } else {
+            // 虚拟Dom => 真实Dom
             render(vnode, rootContainer, isSVG)
           }
           isMounted = true

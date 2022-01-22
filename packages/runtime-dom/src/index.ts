@@ -31,6 +31,11 @@ declare module '@vue/reactivity' {
   }
 }
 
+
+// {
+//   patchProp: () => {}, // 更新DOM节点各个属性的方法
+//   ...Dom原生方法
+// }
 const rendererOptions = extend({ patchProp }, nodeOps)
 
 // lazy create the renderer - this makes core renderer logic tree-shakable
@@ -63,6 +68,9 @@ export const hydrate = ((...args) => {
   ensureHydrationRenderer().hydrate(...args)
 }) as RootHydrateFunction
 
+// 1.用render的createApp生成app
+// 2.改造app.mount
+// 3.返回app
 export const createApp = ((...args) => {
   const app = ensureRenderer().createApp(...args)
 
@@ -84,6 +92,7 @@ export const createApp = ((...args) => {
       // rendered by the server, the template should not contain any user data.
       component.template = container.innerHTML
       // 2.x compat check
+      // In Vue 3, the container is no longer considered part of the template
       if (__COMPAT__ && __DEV__) {
         for (let i = 0; i < container.attributes.length; i++) {
           const attr = container.attributes[i]
