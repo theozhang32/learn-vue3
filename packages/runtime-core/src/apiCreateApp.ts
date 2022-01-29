@@ -191,6 +191,7 @@ export function createAppAPI<HostElement>(
 
     const app: App = (context.app = {
       _uid: uid++,
+      // createAppd的选项对象
       _component: rootComponent as ConcreteComponent,
       _props: rootProps,
       _container: null,
@@ -282,6 +283,7 @@ export function createAppAPI<HostElement>(
       },
 
       // app.mount原始定义的地方
+      // 返回组件实例（是个Ref）
       mount(
         rootContainer: HostElement,
         isHydrate?: boolean,
@@ -306,6 +308,7 @@ export function createAppAPI<HostElement>(
           if (isHydrate && hydrate) {
             hydrate(vnode as VNode<Node, Element>, rootContainer as any)
           } else {
+            // 初始化render
             // 虚拟Dom => 真实Dom
             render(vnode, rootContainer, isSVG)
           }

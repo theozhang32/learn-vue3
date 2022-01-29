@@ -44,6 +44,12 @@ let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
 
+// 使用DOM的Node接口和Element接口构建渲染器renderer
+// renderer = {
+//   render,
+//   hydrate,
+//   createApp: createAppAPI(render, hydrate)
+// }
 function ensureRenderer() {
   return (
     renderer ||
@@ -68,7 +74,7 @@ export const hydrate = ((...args) => {
   ensureHydrationRenderer().hydrate(...args)
 }) as RootHydrateFunction
 
-// 1.用render的createApp生成app
+// 1.用上面渲染器的createApp生成app
 // 2.改造app.mount
 // 3.返回app
 export const createApp = ((...args) => {
@@ -81,15 +87,18 @@ export const createApp = ((...args) => {
 
   const { mount } = app
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
+    // app挂载宿主容器
     const container = normalizeContainer(containerOrSelector)
     if (!container) return
 
     const component = app._component
     if (!isFunction(component) && !component.render && !component.template) {
+      // 选项对象没有提供渲染方法或模板
       // __UNSAFE__
       // Reason: potential execution of JS expressions in in-DOM template.
       // The user must make sure the in-DOM template is trusted. If it's
       // rendered by the server, the template should not contain any user data.
+      // 把宿主容器的innerHTML当作模版
       component.template = container.innerHTML
       // 2.x compat check
       // In Vue 3, the container is no longer considered part of the template

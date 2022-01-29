@@ -166,6 +166,7 @@ export type CreateComponentPublicInstance<
 
 // public properties exposed on the proxy, which is used as the render context
 // in templates (as `this` in the render option)
+// Vue组件实例
 export type ComponentPublicInstance<
   P = {}, // props type extracted from props option
   B = {}, // raw bindings returned from setup()

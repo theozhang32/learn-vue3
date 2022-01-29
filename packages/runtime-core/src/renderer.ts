@@ -2301,14 +2301,23 @@ function baseCreateRenderer(
   }
 
   const render: RootRenderFunction = (vnode, container, isSVG) => {
+    // vnode 下一个vnode状态
+    // container._vnode当前vnode状态
+
     if (vnode == null) {
+      // 若传进来下一个vnode状态是null，并且当前有vnode状态；则代表unmount操作
       if (container._vnode) {
         unmount(container._vnode, null, null, true)
       }
     } else {
+      // 若传进来vnode存在，则进行patch
+      // n1 当前vnode
+      // n2 下一vnode
       patch(container._vnode || null, vnode, container, null, null, null, isSVG)
     }
+    // TODO 待研究
     flushPostFlushCbs()
+    // render结束后，将当前vode替换成下一个vnode
     container._vnode = vnode
   }
 
