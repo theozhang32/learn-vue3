@@ -90,7 +90,8 @@ function createConfig(format, output, plugins = []) {
   const isCompatBuild = !!packageOptions.compat
 
   output.exports = isCompatPackage ? 'auto' : 'named'
-  output.sourcemap = !!process.env.SOURCE_MAP
+  // output.sourcemap = !!process.env.SOURCE_MAP
+  output.sourcemap = true
   output.externalLiveBindings = false
 
   if (isGlobalBuild) {

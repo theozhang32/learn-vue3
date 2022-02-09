@@ -1,0 +1,44 @@
+<html>
+  <body>
+    <div id="app"></div>
+    <script src="../dist/vue.global.js"></script>
+    <script>
+      console.log(Vue)
+      const ref = Vue.ref
+      const reactive = Vue.reactive
+      const app = Vue.createApp({
+        // template: `
+        // <div>{{msg}}</div>
+        // <button @click="onClick">click</button>
+        // <div><button @click="onDecrease">-</button>{{state.count}}<button @click="onIncrease">+</button></div>
+        // `,
+        template: `
+        <div><button @click="onDecrease">-</button>{{state.count}}<button @click="onIncrease">+</button></div>
+        `,
+        setup() {
+          // const msg = ref('Hello World!')
+          const state = reactive({
+            count: 0
+          })
+          const onIncrease = () => {
+            state.count++
+          }
+          const onDecrease = () => {
+            state.count--
+          }
+          // const onClick = () => {
+          //   msg.value = 'Change Msg'
+          // }
+          return {
+            // msg,
+            // onClick,
+            state,
+            onDecrease,
+            onIncrease
+          }
+        },
+      })
+      app.mount('#app')
+    </script>
+  </body>
+</html>

@@ -1204,6 +1204,7 @@ function baseCreateRenderer(
         parentSuspense
       ))
 
+
     if (__DEV__ && instance.type.__hmrId) {
       registerHMR(instance)
     }
@@ -1242,7 +1243,6 @@ function baseCreateRenderer(
       }
       return
     }
-
     setupRenderEffect(
       instance,
       initialVNode,
@@ -1303,6 +1303,7 @@ function baseCreateRenderer(
     isSVG,
     optimized
   ) => {
+    debugger
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
         let vnodeHook: VNodeHook | null | undefined

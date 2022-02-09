@@ -178,6 +178,12 @@ export function createAppAPI<HostElement>(
   render: RootRenderFunction,
   hydrate?: RootHydrateFunction
 ): CreateAppFunction<HostElement> {
+  /**
+   * @description: 全局API createApp
+   * @param {*} rootComponent ComponentOptions | FunctionalComponent（ConcreteComponent）
+   * @param {*} rootProps 根prop默认值
+   * @return {*}
+   */  
   return function createApp(rootComponent, rootProps = null) {
     if (rootProps != null && !isObject(rootProps)) {
       __DEV__ && warn(`root props passed to app.mount() must be an object.`)
@@ -191,7 +197,7 @@ export function createAppAPI<HostElement>(
 
     const app: App = (context.app = {
       _uid: uid++,
-      // createAppd的选项对象
+      // createApp的选项对象
       _component: rootComponent as ConcreteComponent,
       _props: rootProps,
       _container: null,
@@ -364,7 +370,7 @@ export function createAppAPI<HostElement>(
     if (__COMPAT__) {
       installAppCompatProperties(app, context, render)
     }
-
+    console.log(app)
     return app
   }
 }

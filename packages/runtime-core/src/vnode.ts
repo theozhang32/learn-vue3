@@ -407,6 +407,7 @@ function createBaseVNode(
   isBlockNode = false,
   needFullChildrenNormalization = false
 ) {
+
   const vnode = {
     __v_isVNode: true,
     __v_skip: true,
@@ -477,7 +478,6 @@ function createBaseVNode(
     convertLegacyVModelProps(vnode)
     defineLegacyVNodeProperties(vnode)
   }
-
   return vnode
 }
 
@@ -495,6 +495,8 @@ function _createVNode(
   dynamicProps: string[] | null = null,
   isBlockNode = false
 ): VNode {
+  // 处理type
+
   if (!type || type === NULL_DYNAMIC_COMPONENT) {
     if (__DEV__ && !type) {
       warn(`Invalid vnode type when creating vnode: ${type}.`)
@@ -566,6 +568,7 @@ function _createVNode(
     )
   }
 
+  // 调createBaseVNode
   return createBaseVNode(
     type,
     props,

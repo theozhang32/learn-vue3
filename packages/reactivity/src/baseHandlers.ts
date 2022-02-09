@@ -46,6 +46,8 @@ const shallowReadonlyGet = /*#__PURE__*/ createGetter(true, true)
 
 const arrayInstrumentations = /*#__PURE__*/ createArrayInstrumentations()
 
+// @private
+// 增强数组方法
 function createArrayInstrumentations() {
   const instrumentations: Record<string, Function> = {}
   // instrument identity-sensitive Array methods to account for possible reactive
@@ -99,12 +101,15 @@ function createGetter(isReadonly = false, shallow = false) {
           : reactiveMap
         ).get(target)
     ) {
+      // 访问ReactiveFlags.RAW属性，并且代理记录中有receiver(当前Proxy)
+      // 返回目标对象
       return target
     }
 
     const targetIsArray = isArray(target)
 
     if (!isReadonly && targetIsArray && hasOwn(arrayInstrumentations, key)) {
+      // 调用数组方法时，用createArrayInstrumentations增强的版本
       return Reflect.get(arrayInstrumentations, key, receiver)
     }
 
@@ -114,6 +119,7 @@ function createGetter(isReadonly = false, shallow = false) {
       return res
     }
 
+    // 依赖收集
     if (!isReadonly) {
       track(target, TrackOpTypes.GET, key)
     }
@@ -124,6 +130,10 @@ function createGetter(isReadonly = false, shallow = false) {
 
     if (isRef(res)) {
       // ref unwrapping - does not apply for Array + integer key.
+      // 访问一个是Ref的数组项时，不进行unref
+      // 可以换成下面的写法
+      // const keepWrap = targetIsArray && isIntegerKey(key)
+      // return keepWrap ? res : res.value
       const shouldUnwrap = !targetIsArray || !isIntegerKey(key)
       return shouldUnwrap ? res.value : res
     }
@@ -166,19 +176,26 @@ function createSetter(shallow = false) {
       // in shallow mode, objects are set as-is regardless of reactive or not
     }
 
+    // 判断是否target是否有这个key
     const hadKey =
       isArray(target) && isIntegerKey(key)
         ? Number(key) < target.length
         : hasOwn(target, key)
     const result = Reflect.set(target, key, value, receiver)
     // don't trigger if target is something up in the prototype chain of original
+    // 只有目标对象就是Reactive代理的目标对象本身时，触发更新
+    // receiver可能是当前proxy的继承对象
     if (target === toRaw(receiver)) {
+      // 触发更新
       if (!hadKey) {
+        // 不是原本有的key，则触发ADD
         trigger(target, TriggerOpTypes.ADD, key, value)
       } else if (hasChanged(value, oldValue)) {
+        // 或者，如果真的更新了，则触发SET
         trigger(target, TriggerOpTypes.SET, key, value, oldValue)
       }
     }
+    // 返回setter结果
     return result
   }
 }

@@ -177,7 +177,7 @@ export function shallowReadonly<T extends object>(target: T): Readonly<T> {
     shallowReadonlyMap
   )
 }
-
+// @private
 function createReactiveObject(
   target: Target,
   isReadonly: boolean,
@@ -200,19 +200,25 @@ function createReactiveObject(
     return target
   }
   // target already has corresponding Proxy
+  // 记录已经有了直接返回
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {
     return existingProxy
   }
   // only a whitelist of value types can be observed.
+  // ReactiveFlags.SKIP 或者 不可扩展的直接不可被observe
+  // rawType: Object、Array、Map、Set、WeakMap、WeakSet可以被observed
   const targetType = getTargetType(target)
   if (targetType === TargetType.INVALID) {
     return target
   }
+  // 创建代理
   const proxy = new Proxy(
     target,
+    // 根据TargetType设置不同的handlers
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers
   )
+  // 记录代理
   proxyMap.set(target, proxy)
   return proxy
 }
@@ -237,6 +243,8 @@ export function isProxy(value: unknown): boolean {
 }
 
 export function toRaw<T>(observed: T): T {
+  // 递归toRaw
+  // 直到observed[ReactiveFlags.RAW]的值不再具有ReactiveFlags.RAW属性（没有进行过Reactive代理）
   const raw = observed && (observed as Target)[ReactiveFlags.RAW]
   return raw ? toRaw(raw) : observed
 }

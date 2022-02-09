@@ -197,6 +197,7 @@ export function track(target: object, type: TrackOpTypes, key: unknown) {
   if (!isTracking()) {
     return
   }
+  // target -> key -> dep(Set<ReactiveEffect> & TrackedMarkers)
   let depsMap = targetMap.get(target)
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
@@ -209,7 +210,8 @@ export function track(target: object, type: TrackOpTypes, key: unknown) {
   const eventInfo = __DEV__
     ? { effect: activeEffect, target, type, key }
     : undefined
-
+  console.log(dep)
+  debugger
   trackEffects(dep, eventInfo)
 }
 
@@ -224,6 +226,8 @@ export function trackEffects(
   let shouldTrack = false
   if (effectTrackDepth <= maxMarkerBits) {
     if (!newTracked(dep)) {
+      // dep.n = dep.n | trackOpBit
+      // 1|1=1; 1|0=1; 0|1=1; 0|0=0
       dep.n |= trackOpBit // set newly tracked
       shouldTrack = !wasTracked(dep)
     }
@@ -233,7 +237,9 @@ export function trackEffects(
   }
 
   if (shouldTrack) {
+    console.log(activeEffect)
     dep.add(activeEffect!)
+    debugger
     activeEffect!.deps.push(dep)
     if (__DEV__ && activeEffect!.onTrack) {
       activeEffect!.onTrack(
