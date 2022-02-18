@@ -52,7 +52,7 @@ export const ITERATE_KEY = Symbol(__DEV__ ? 'iterate' : '')
 export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '')
 
 export class ReactiveEffect<T = any> {
-  active = true
+  active = true // 响应式激活标识
   deps: Dep[] = []
 
   /**
@@ -72,7 +72,7 @@ export class ReactiveEffect<T = any> {
   onTrigger?: (event: DebuggerEvent) => void
 
   constructor(
-    public fn: () => T,
+    public fn: () => T, // 响应式变化后执行函数
     public scheduler: EffectScheduler | null = null,
     scope?: EffectScope | null
   ) {
@@ -210,8 +210,6 @@ export function track(target: object, type: TrackOpTypes, key: unknown) {
   const eventInfo = __DEV__
     ? { effect: activeEffect, target, type, key }
     : undefined
-  console.log(dep)
-  debugger
   trackEffects(dep, eventInfo)
 }
 
@@ -239,7 +237,6 @@ export function trackEffects(
   if (shouldTrack) {
     console.log(activeEffect)
     dep.add(activeEffect!)
-    debugger
     activeEffect!.deps.push(dep)
     if (__DEV__ && activeEffect!.onTrack) {
       activeEffect!.onTrack(

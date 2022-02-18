@@ -351,6 +351,7 @@ function baseCreateRenderer(
 
   // Note: functions inside this closure should use `const xxx = () => {}`
   // style in order to prevent being inlined by minifiers.
+  // patch方法
   const patch: PatchFn = (
     n1,
     n2,
@@ -379,6 +380,7 @@ function baseCreateRenderer(
     }
 
     const { type, ref, shapeFlag } = n2
+    debugger // 调试
     switch (type) {
       case Text:
         processText(n1, n2, container, anchor)
@@ -1159,7 +1161,10 @@ function baseCreateRenderer(
   ) => {
     n2.slotScopeIds = slotScopeIds
     if (n1 == null) {
+      // 初始化情况
       if (n2.shapeFlag & ShapeFlags.COMPONENT_KEPT_ALIVE) {
+        // keep-alive
+        // TODO 具体执行？
         ;(parentComponent!.ctx as KeepAliveContext).activate(
           n2,
           container,
@@ -1168,6 +1173,7 @@ function baseCreateRenderer(
           optimized
         )
       } else {
+        // mount
         mountComponent(
           n2,
           container,
@@ -1179,6 +1185,7 @@ function baseCreateRenderer(
         )
       }
     } else {
+      // 更新情况
       updateComponent(n1, n2, optimized)
     }
   }
@@ -1204,6 +1211,8 @@ function baseCreateRenderer(
         parentSuspense
       ))
 
+    debugger // 调试
+
 
     if (__DEV__ && instance.type.__hmrId) {
       registerHMR(instance)
@@ -1219,16 +1228,25 @@ function baseCreateRenderer(
       ;(instance.ctx as KeepAliveContext).renderer = internals
     }
 
+    console.log(instance)
+    debugger // 调试
+
     // resolve props and slots for setup context
+    // 若没有迁移构建版本
+    // https://v3.cn.vuejs.org/guide/migration/migration-build.html#%E6%A6%82%E8%BF%B0
     if (!(__COMPAT__ && compatMountInstance)) {
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
+      // 初始化Component
+      // 解析props和slots & setup函数转换
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
       }
     }
+    console.log(instance)
+    debugger // 调试
 
     // setup() is async. This component relies on async logic to be resolved
     // before proceeding
@@ -1243,6 +1261,8 @@ function baseCreateRenderer(
       }
       return
     }
+
+    // 初始化响应式更新
     setupRenderEffect(
       instance,
       initialVNode,
@@ -1303,7 +1323,6 @@ function baseCreateRenderer(
     isSVG,
     optimized
   ) => {
-    debugger
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
         let vnodeHook: VNodeHook | null | undefined
@@ -1337,6 +1356,7 @@ function baseCreateRenderer(
             if (__DEV__) {
               startMeasure(instance, `render`)
             }
+            debugger // 调试
             instance.subTree = renderComponentRoot(instance)
             if (__DEV__) {
               endMeasure(instance, `render`)
@@ -1371,6 +1391,7 @@ function baseCreateRenderer(
           if (__DEV__) {
             startMeasure(instance, `render`)
           }
+          debugger // 调试
           const subTree = (instance.subTree = renderComponentRoot(instance))
           if (__DEV__) {
             endMeasure(instance, `render`)
@@ -1378,6 +1399,7 @@ function baseCreateRenderer(
           if (__DEV__) {
             startMeasure(instance, `patch`)
           }
+          // n1 == null n2 == subTree
           patch(
             null,
             subTree,
@@ -1480,6 +1502,7 @@ function baseCreateRenderer(
         if (__DEV__) {
           startMeasure(instance, `render`)
         }
+        debugger // 调试
         const nextTree = renderComponentRoot(instance)
         if (__DEV__) {
           endMeasure(instance, `render`)
@@ -2304,6 +2327,7 @@ function baseCreateRenderer(
   const render: RootRenderFunction = (vnode, container, isSVG) => {
     // vnode 下一个vnode状态
     // container._vnode当前vnode状态
+    debugger // 调试
 
     if (vnode == null) {
       // 若传进来下一个vnode状态是null，并且当前有vnode状态；则代表unmount操作

@@ -587,10 +587,11 @@ export function setupComponent(
 
   const { props, children } = instance.vnode
   const isStateful = isStatefulComponent(instance)
-  initProps(instance, props, isStateful, isSSR)
-  initSlots(instance, children)
+  initProps(instance, props, isStateful, isSSR) // 初始化props
+  initSlots(instance, children) // 初始化slots
 
   const setupResult = isStateful
+    // 处理setup
     ? setupStatefulComponent(instance, isSSR)
     : undefined
   isInSSRComponentSetup = false
@@ -630,7 +631,7 @@ function setupStatefulComponent(
   // 0. create render proxy property access cache
   instance.accessCache = Object.create(null)
   // 1. create public instance / render proxy
-  // also mark it raw so it's never observed
+  // also mark it raw so it's never observed（这个proxy对象不会被响应式处理）
   instance.proxy = markRaw(new Proxy(instance.ctx, PublicInstanceProxyHandlers))
   if (__DEV__) {
     exposePropsOnRenderContext(instance)
@@ -639,20 +640,25 @@ function setupStatefulComponent(
   const { setup } = Component
   if (setup) {
     const setupContext = (instance.setupContext =
+      // Function.length指明函数形参个数
+      // setup(props, context) {}
       setup.length > 1 ? createSetupContext(instance) : null)
 
     setCurrentInstance(instance)
     pauseTracking()
+    // setup函数的return结果
     const setupResult = callWithErrorHandling(
       setup,
       instance,
       ErrorCodes.SETUP_FUNCTION,
+      // 两个参数props和context
       [__DEV__ ? shallowReadonly(instance.props) : instance.props, setupContext]
     )
     resetTracking()
     unsetCurrentInstance()
 
     if (isPromise(setupResult)) {
+      // 异步setup情况
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance)
 
       if (isSSR) {
@@ -678,6 +684,7 @@ function setupStatefulComponent(
       handleSetupResult(instance, setupResult, isSSR)
     }
   } else {
+    // 未使用composition api的情况
     finishComponentSetup(instance, isSSR)
   }
 }
@@ -688,6 +695,7 @@ export function handleSetupResult(
   isSSR: boolean
 ) {
   if (isFunction(setupResult)) {
+    // setup返回一个函数，作为render函数
     // setup returned an inline render function
     if (__SSR__ && (instance.type as ComponentOptions).__ssrInlineRender) {
       // when the function's name is `ssrRender` (compiled by SFC inline mode),
@@ -708,6 +716,7 @@ export function handleSetupResult(
     if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
       instance.devtoolsRawSetupState = setupResult
     }
+    // 指定setupState
     instance.setupState = proxyRefs(setupResult)
     if (__DEV__) {
       exposeSetupStateOnRenderContext(instance)
@@ -763,6 +772,7 @@ export function finishComponentSetup(
 
   // template / render function normalization
   // could be already set when returned from setup()
+  // 有可能setup直接返回了一个渲染函数
   if (!instance.render) {
     // only do on-the-fly compile if not in SSR - SSR on-the-fly compilation
     // is done by server-renderer
@@ -796,6 +806,7 @@ export function finishComponentSetup(
             extend(finalCompilerOptions.compatConfig, Component.compatConfig)
           }
         }
+        // 把template编译成通用render函数
         Component.render = compile(template, finalCompilerOptions)
         if (__DEV__) {
           endMeasure(instance, `compile`)
@@ -817,6 +828,7 @@ export function finishComponentSetup(
   if (__FEATURE_OPTIONS_API__ && !(__COMPAT__ && skipOptions)) {
     setCurrentInstance(instance)
     pauseTracking()
+    // options api的兼容
     applyOptions(instance)
     resetTracking()
     unsetCurrentInstance()
@@ -899,6 +911,8 @@ export function createSetupContext(
       expose
     })
   } else {
+    // setup(props, context){}
+    // context的组成
     return {
       get attrs() {
         return attrs || (attrs = createAttrsProxy(instance))

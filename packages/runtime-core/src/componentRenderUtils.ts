@@ -72,6 +72,8 @@ export function renderComponentRoot(
       // runtime-compiled render functions using `with` block.
       const proxyToUse = withProxy || proxy
       result = normalizeVNode(
+        // instance可能没render
+        // 意味着本身是个函数式组件
         render!.call(
           proxyToUse,
           proxyToUse!,
