@@ -368,12 +368,14 @@ function baseCreateRenderer(
     }
 
     // patching & not same type, unmount old tree
+    // 前后不是一种VNodeType，卸载老的vnode tree
     if (n1 && !isSameVNodeType(n1, n2)) {
       anchor = getNextHostNode(n1)
       unmount(n1, parentComponent, parentSuspense, true)
       n1 = null
     }
 
+    // n2 patchFlag一种特殊情况 待研究？
     if (n2.patchFlag === PatchFlags.BAIL) {
       optimized = false
       n2.dynamicChildren = null
@@ -383,19 +385,25 @@ function baseCreateRenderer(
     debugger // 调试
     switch (type) {
       case Text:
+        // 文本节点
         processText(n1, n2, container, anchor)
         break
       case Comment:
+        // 注释
         processCommentNode(n1, n2, container, anchor)
         break
       case Static:
+        // 静态节点
         if (n1 == null) {
+          // 初始化静态节点
           mountStaticNode(n2, container, anchor, isSVG)
         } else if (__DEV__) {
+          // 测试环境才对静态节点patch
           patchStaticNode(n1, n2, container, isSVG)
         }
         break
       case Fragment:
+        // 片段
         processFragment(
           n1,
           n2,
@@ -409,7 +417,12 @@ function baseCreateRenderer(
         )
         break
       default:
+        /**
+         * shapeFlag
+         * 17 -> ARRAY_CHILDREN、ELEMENT
+         */
         if (shapeFlag & ShapeFlags.ELEMENT) {
+          // 原生Element
           processElement(
             n1,
             n2,
@@ -422,6 +435,7 @@ function baseCreateRenderer(
             optimized
           )
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
+          // 组件
           processComponent(
             n1,
             n2,
@@ -434,6 +448,7 @@ function baseCreateRenderer(
             optimized
           )
         } else if (shapeFlag & ShapeFlags.TELEPORT) {
+          // teleport节点
           ;(type as typeof TeleportImpl).process(
             n1 as TeleportVNode,
             n2 as TeleportVNode,
@@ -447,6 +462,7 @@ function baseCreateRenderer(
             internals
           )
         } else if (__FEATURE_SUSPENSE__ && shapeFlag & ShapeFlags.SUSPENSE) {
+          // suspense节点
           ;(type as typeof SuspenseImpl).process(
             n1,
             n2,
@@ -469,7 +485,7 @@ function baseCreateRenderer(
       setRef(ref, n1 && n1.ref, parentSuspense, n2 || n1, !n2)
     }
   }
-
+  // 设定文本节点内容
   const processText: ProcessTextOrCommentFn = (n1, n2, container, anchor) => {
     if (n1 == null) {
       hostInsert(
@@ -485,6 +501,7 @@ function baseCreateRenderer(
     }
   }
 
+  // 设定注释节点内容
   const processCommentNode: ProcessTextOrCommentFn = (
     n1,
     n2,
@@ -585,6 +602,7 @@ function baseCreateRenderer(
   ) => {
     isSVG = isSVG || (n2.type as string) === 'svg'
     if (n1 == null) {
+      // 原生节点初始化
       mountElement(
         n2,
         container,
@@ -596,6 +614,7 @@ function baseCreateRenderer(
         optimized
       )
     } else {
+      // 原生节点更新
       patchElement(
         n1,
         n2,
@@ -608,6 +627,7 @@ function baseCreateRenderer(
     }
   }
 
+  // 初始化Element类节点
   const mountElement = (
     vnode: VNode,
     container: RendererElement,
@@ -642,9 +662,12 @@ function baseCreateRenderer(
 
       // mount children first, since some props may rely on child content
       // being already rendered, e.g. `<select value>`
+      // 先执行子节点初始化
       if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // Element仅有文本子节点
         hostSetElementText(el, vnode.children as string)
       } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // Element子节点是数组
         mountChildren(
           vnode.children as VNodeArrayChildren,
           el,
@@ -661,6 +684,7 @@ function baseCreateRenderer(
         invokeDirectiveHook(vnode, null, parentComponent, 'created')
       }
       // props
+      // 更新节点属性
       if (props) {
         for (const key in props) {
           if (key !== 'value' && !isReservedProp(key)) {
@@ -693,7 +717,8 @@ function baseCreateRenderer(
           invokeVNodeHook(vnodeHook, parentComponent, vnode)
         }
       }
-      // scopeId
+      // 设置scopeId
+      // Q：scopeId作用？
       setScopeId(el, vnode, vnode.scopeId, slotScopeIds, parentComponent)
     }
     if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
@@ -706,6 +731,8 @@ function baseCreateRenderer(
         enumerable: false
       })
     }
+
+    // 插入页面Dom树前执行一系列钩子
     if (dirs) {
       invokeDirectiveHook(vnode, null, parentComponent, 'beforeMount')
     }
@@ -718,7 +745,10 @@ function baseCreateRenderer(
     if (needCallTransitionHooks) {
       transition!.beforeEnter(el)
     }
+    // 插入Dom树
     hostInsert(el, container, anchor)
+
+    // 插入Dom树后执行一系列钩子
     if (
       (vnodeHook = props && props.onVnodeMounted) ||
       needCallTransitionHooks ||
@@ -770,6 +800,7 @@ function baseCreateRenderer(
     }
   }
 
+  // 初始化Element下面的子节点
   const mountChildren: MountChildrenFn = (
     children,
     container,
@@ -799,6 +830,7 @@ function baseCreateRenderer(
     }
   }
 
+  // 更新Element类节点
   const patchElement = (
     n1: VNode,
     n2: VNode,
@@ -1148,6 +1180,8 @@ function baseCreateRenderer(
     }
   }
 
+  // 处理组件
+  // 第一次render时执行的patch，就是处理组件
   const processComponent = (
     n1: VNode | null,
     n2: VNode,
@@ -1190,6 +1224,8 @@ function baseCreateRenderer(
     }
   }
 
+  // 组件mount
+  // 这里会执行setupRenderEffect -> componentUpdateFn
   const mountComponent: MountComponentFn = (
     initialVNode,
     container,
@@ -1228,9 +1264,6 @@ function baseCreateRenderer(
       ;(instance.ctx as KeepAliveContext).renderer = internals
     }
 
-    console.log(instance)
-    debugger // 调试
-
     // resolve props and slots for setup context
     // 若没有迁移构建版本
     // https://v3.cn.vuejs.org/guide/migration/migration-build.html#%E6%A6%82%E8%BF%B0
@@ -1240,6 +1273,7 @@ function baseCreateRenderer(
       }
       // 初始化Component
       // 解析props和slots & setup函数转换
+      // 这步执行完之后instance.proxy里面就有Proxy类型的状态了
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
@@ -1325,6 +1359,7 @@ function baseCreateRenderer(
   ) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
+        // internalInstance初始化过程
         let vnodeHook: VNodeHook | null | undefined
         const { el, props } = initialVNode
         const { bm, m, parent } = instance
@@ -1352,11 +1387,11 @@ function baseCreateRenderer(
 
         if (el && hydrateNode) {
           // vnode has adopted host node - perform hydration instead of mount.
+          // Q：服务端渲染走这条？
           const hydrateSubTree = () => {
             if (__DEV__) {
               startMeasure(instance, `render`)
             }
-            debugger // 调试
             instance.subTree = renderComponentRoot(instance)
             if (__DEV__) {
               endMeasure(instance, `render`)
@@ -1390,8 +1425,9 @@ function baseCreateRenderer(
         } else {
           if (__DEV__) {
             startMeasure(instance, `render`)
-          }
+          }      
           debugger // 调试
+          // 渲染子代 VNode
           const subTree = (instance.subTree = renderComponentRoot(instance))
           if (__DEV__) {
             endMeasure(instance, `render`)
@@ -1466,6 +1502,9 @@ function baseCreateRenderer(
         // updateComponent
         // This is triggered by mutation of component's own state (next: null)
         // OR parent calling processComponent (next: VNode)
+        // 组件更新
+        // 1. 组件内部状态改变
+        // 2. 父代调用processComponent
         let { next, bu, u, parent, vnode } = instance
         let originNext = next
         let vnodeHook: VNodeHook | null | undefined

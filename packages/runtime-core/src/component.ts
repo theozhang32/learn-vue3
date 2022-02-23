@@ -681,6 +681,7 @@ function setupStatefulComponent(
         )
       }
     } else {
+      debugger
       handleSetupResult(instance, setupResult, isSSR)
     }
   } else {
@@ -728,6 +729,7 @@ export function handleSetupResult(
       }`
     )
   }
+  debugger
   finishComponentSetup(instance, isSSR)
 }
 

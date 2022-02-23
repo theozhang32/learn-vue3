@@ -13,28 +13,29 @@
         // <div><button @click="onDecrease">-</button>{{state.count}}<button @click="onIncrease">+</button></div>
         // `,
         template: `
-        <div><button @click="onDecrease">-</button>{{state.count}}<button @click="onIncrease">+</button></div>
+        <div>{{msg}}</div>
+        <div>Hello World too</div>
         `,
         setup() {
-          // const msg = ref('Hello World!')
-          const state = reactive({
-            count: 0
-          })
-          const onIncrease = () => {
-            state.count++
-          }
-          const onDecrease = () => {
-            state.count--
-          }
+          const msg = ref('Hello World!')
+          // const state = reactive({
+          //   count: 0
+          // })
+          // const onIncrease = () => {
+          //   state.count++
+          // }
+          // const onDecrease = () => {
+          //   state.count--
+          // }
           // const onClick = () => {
           //   msg.value = 'Change Msg'
           // }
           return {
-            // msg,
+            msg,
             // onClick,
-            state,
-            onDecrease,
-            onIncrease
+            // state,
+            // onDecrease,
+            // onIncrease
           }
         },
       })
