@@ -12,6 +12,7 @@ import { EMPTY_OBJ, extend, isArray, isFunction, isObject } from '@vue/shared'
 import type { ComponentInternalInstance, ComponentOptions } from './component'
 import type { ComponentPublicInstance } from './componentPublicInstance'
 
+// NOTE 一个开发工具方法，主要用于在开发环境下为自定义格式化程序进行初始化。
 export function initCustomFormatter(): void {
   /* eslint-disable no-restricted-globals */
   if (!__DEV__ || typeof window === 'undefined') {

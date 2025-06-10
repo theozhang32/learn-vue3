@@ -104,6 +104,7 @@ export const createApp = ((...args) => {
   }
 
   const { mount } = app
+  // NOTE 重新改写mount
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
     const container = normalizeContainer(containerOrSelector)
     if (!container) return
@@ -225,6 +226,7 @@ function injectCompilerOptionsCheck(app: App) {
   }
 }
 
+// NOTE 返回一个标准化的可挂载元素
 function normalizeContainer(
   container: Element | ShadowRoot | string,
 ): Element | ShadowRoot | null {

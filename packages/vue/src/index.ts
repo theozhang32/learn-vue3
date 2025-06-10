@@ -27,6 +27,7 @@ if (__DEV__) {
 
 const compileCache: Record<string, RenderFunction> = Object.create(null)
 
+// NOTE 把template编译成渲染函数
 function compileToFunction(
   template: string | HTMLElement,
   options?: CompilerOptions,
